@@ -1,117 +1,212 @@
 # Consulta de Notas ULS
 
-Sistema de práctica con API REST Laravel 12 (PHP 8.2+), Vue 3, Vuetify 3, AnimateIcons Lucide, VueUse QR, OTP Input, Chart.js, DomPDF y PDF.js. Los datos se guardan en SQLite, no en el navegador.
+Sistema académico de práctica para la Universidad Luterana Salvadoreña, desarrollado con **Laravel 12, Vue 3 y Vuetify 3**. Permite administrar docentes, estudiantes, grupos, matrículas y notas; usar Google Authenticator; generar informes PDF y Excel; y descargar la boleta de inscripción del estudiante.
 
-## Ejecutar
+## Documentación
 
-Requisitos: PHP 8.2+ con `pdo_sqlite`, `mbstring`, `openssl`, `fileinfo`, `dom` y `zip`; Composer; Node 20.19+ o 22.12+.
+| Documento | Contenido |
+|---|---|
+| [Documentación del sistema](docs/documentacion-sistema.md) | Arquitectura, tecnologías, ubicación del código, módulos, permisos, reglas y flujos. |
+| [Guía de prueba para el docente](docs/guia-pruebas-docente.md) | Recorrido de evaluación con resultados esperados, prueba de QR y correos sin SMTP. |
+| [Base de datos](docs/base-de-datos.md) | Diagrama físico, relaciones y restricciones. |
+
+## 1. Requisitos
+
+- PHP **8.2 o superior**, compatible con `backend/composer.lock`.
+- Composer 2.
+- Node.js **22** y npm; el proyecto se verificó con Node 22.19.
+- Extensiones PHP: `pdo_sqlite`, `mbstring`, `openssl`, `fileinfo`, `dom`, `xml`, `xmlwriter`, `curl` y `zip`, además de las extensiones habituales de PHP. ZIP se utiliza para instalar las dependencias con Composer.
+- Un navegador actualizado. Google Authenticator en un teléfono solo es necesario para probar docentes y estudiantes.
+- Acceso a Internet para descargar las dependencias en la primera instalación.
+
+Se utiliza **SQLite**: no hay que crear una base MySQL, importar un SQL ni iniciar Apache para la prueba local. La base se crea en `backend/database/database.sqlite`.
+
+Verificar las herramientas:
+
+```powershell
+php -v
+php -m
+composer --version
+node --version
+npm.cmd --version
+```
+
+Si PHP no carga las extensiones indicadas, localizar su configuración con `php --ini`, habilitarlas en el `php.ini` correspondiente y reiniciar la terminal o el servidor PHP.
+
+## 2. Instalar el proyecto
+
+Clonar o descomprimir la entrega. Abrir una terminal **PowerShell en la raíz del proyecto**, donde está `package.json`.
+
+### Frontend
+
+```powershell
+npm.cmd ci
+```
+
+### Backend y datos de práctica
+
+```powershell
+cd backend
+composer install
+
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+if (Select-String -Path .env -Pattern '^APP_KEY=\s*$' -Quiet) { php artisan key:generate --no-interaction }
+if (-not (Test-Path database/database.sqlite)) { New-Item database/database.sqlite -ItemType File | Out-Null }
+
+php artisan config:clear
+php artisan migrate --seed --no-interaction
+```
+
+El `.env.example` viene preparado con:
+
+```dotenv
+APP_ENV=local
+APP_URL=http://127.0.0.1:8001
+FRONTEND_URL=http://127.0.0.1:5173
+DB_CONNECTION=sqlite
+SESSION_DRIVER=database
+CACHE_STORE=database
+MAIL_MAILER=log
+```
+
+**Conservar `APP_KEY` si la instalación ya tiene datos**: cifra los secretos del autenticador. Las instrucciones anteriores solo generan una clave cuando está vacía. No usar `migrate:fresh` sobre la base que se desea conservar.
+
+En una instalación nueva, la semilla crea 6 docentes, 12 estudiantes, 3 grupos, 36 matrículas y 72 notas ficticias de **septiembre y octubre de 2026**, además del administrador inicial y el administrador de evaluación. No envía correos. Las cuentas académicas ficticias no tienen una contraseña pública ni un autenticador configurado.
+
+## 3. Ejecutar
+
+Mantener abiertas estas dos terminales:
+
+**Terminal 1 — dentro de `backend`:**
+
+```powershell
+php artisan serve --host=127.0.0.1 --port=8001
+```
+
+**Terminal 2 — en la raíz del proyecto:**
+
+```powershell
+npm.cmd run dev -- --port 5173 --strictPort
+```
+
+Abrir **http://127.0.0.1:5173/login**. Usar el mismo host `127.0.0.1` en ambos servicios. Vite reenvía `/api` al backend del puerto 8001.
+
+En Windows también se puede ejecutar `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\iniciar.ps1` desde la raíz, una vez instaladas las dependencias. Este script inicia ambos servicios sin ventanas adicionales y guarda sus registros en `.runtime`. Si un puerto ya está ocupado, no inicia otra instancia. Para una evaluación es más sencillo utilizar las dos terminales anteriores, donde los errores quedan visibles.
+
+## 4. Administrador de prueba para el docente
+
+| Dato | Valor |
+|---|---|
+| Correo | **admin.prueba@uls.edu.sv** |
+| Contraseña | **PruebaULS@2026!** |
+| Rol | Administrador |
+| Código QR / OTP | **No requerido** |
+| Cambio inicial de clave | **No requerido en esta cuenta de evaluación** |
+
+Esta cuenta es pública y se crea únicamente en el entorno local de evaluación. Inicia directamente en el panel con correo y contraseña. La cuenta personal `admin@uls.edu.sv` y sus credenciales se conservan.
+
+Si la base ya existía, crear únicamente el administrador de prueba sin modificar los datos académicos:
+
+```powershell
+cd backend
+php artisan uls:demo-admin
+```
+
+Si se cambió su contraseña durante la evaluación, restaurar **solo esa cuenta**:
+
+```powershell
+php artisan uls:demo-admin --reset
+```
+
+La restauración cierra las sesiones de ese administrador de prueba. Repetir la semilla o ejecutar el comando sin `--reset` no cambia una contraseña que ya se hubiera modificado.
+
+## 5. Prueba rápida
+
+1. Entrar con el administrador de evaluación.
+2. Abrir **Gestión de notas**: comprobar búsqueda y paginación de cinco registros.
+3. Abrir **Informes y estadísticas**, seleccionar **octubre de 2026** y pulsar **Consultar**.
+4. Generar el PDF, revisarlo dentro del visor y descargarlo.
+5. Pulsar **Exportar Excel**. Abrir el `.xlsx`: encabezado institucional, totales verdes y tabla ordenada. La impresión está configurada en A4 horizontal, una página de ancho y encabezados repetidos.
+6. Revisar **Docentes**, **Estudiantes**, **Grupos académicos**, **Mi perfil** y el menú contraíble.
+7. Pulsar **Salir del sistema** y comprobar que una ruta privada solicita iniciar sesión.
+
+El recorrido completo, incluido QR, cambio de clave, boleta y recuperación de acceso, está en la [guía para el docente](docs/guia-pruebas-docente.md).
+
+## 6. Probar correos y QR sin Mailjet
+
+Con `MAIL_MAILER=log`, el sistema genera el contenido del correo en **`backend/storage/logs/laravel.log`**, sin enviarlo por Internet. Así se puede crear un docente o estudiante y consultar en el registro su contraseña temporal y enlace `/activar/...`.
+
+El enlace muestra el QR. Al confirmar el código de Google Authenticator, el usuario entra al panel y debe cambiar su clave temporal; aparece la bienvenida con confeti. En los siguientes accesos, docentes y estudiantes usan correo, contraseña y OTP. **El administrador sigue sin OTP.**
+
+Los registros locales contienen credenciales temporales y enlaces personales de prueba; no deben incorporarse a la entrega pública. La guía detalla cómo localizar únicamente las líneas relevantes. `MAIL_MAILER=array` se reserva para pruebas automáticas: descarta el correo y no permite consultarlo en el registro.
+
+## 7. Envío real con Mailjet — opcional
+
+Para recibir correos en un buzón real, configurar en `backend/.env` las credenciales de la cuenta Mailjet autorizada:
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
+MAIL_HOST=in-v3.mailjet.com
+MAIL_PORT=587
+MAIL_USERNAME=API_KEY_DE_MAILJET
+MAIL_PASSWORD=CLAVE_SECRETA_DE_MAILJET
+MAIL_FROM_ADDRESS=remitente_verificado@ejemplo.com
+MAIL_FROM_NAME="Consulta de Notas ULS"
+```
+
+Después:
+
+```powershell
+php artisan config:clear
+php artisan uls:smtp-check
+```
+
+Reiniciar el backend si estaba ejecutándose. El remitente debe estar validado en Mailjet y el proceso PHP debe tener acceso de red al puerto 587. La comprobación de SMTP no envía correos ni garantiza la entrega en bandeja de entrada; para comprobarla se utiliza una cuenta académica de prueba con un correo controlado por el evaluador. No se incluyen claves SMTP reales en esta documentación.
+
+## 8. Verificación automática
 
 Desde la raíz:
 
 ```powershell
-npm.cmd install
-cd backend
-composer install
-Copy-Item .env.example .env # solo si aún no existe .env
-php artisan key:generate # solo al instalar; conservar APP_KEY después
-New-Item database/database.sqlite -ItemType File -ErrorAction SilentlyContinue
-php artisan migrate --seed
-php artisan serve --host=127.0.0.1 --port=8001
-```
-
-En una segunda terminal, desde la raíz:
-
-```powershell
-npm.cmd run dev
-```
-
-Abrir http://127.0.0.1:5173. Usar siempre `127.0.0.1` para conservar la sesión. Vite reenvía `/api` a Laravel en el puerto 8001. También puedes ejecutar `iniciar.ps1`, que arranca ambos procesos en segundo plano y guarda sus registros en `.runtime`.
-
-## Primer acceso
-
-La semilla genera un administrador `admin@uls.edu.sv` con contraseña aleatoria y enlace de activación local en **`.runtime/acceso-inicial.txt`**, archivo privado excluido de Git. No envía correos al sembrar datos. Incluye 6 docentes, 12 estudiantes, 3 grupos y 72 notas ficticias de septiembre y octubre de 2026. No ejecutes `migrate:fresh` sobre datos que quieras conservar.
-
-**Administrador:** abre el login e ingresa el correo y tu contraseña (la temporal del archivo si aún no la has cambiado). No requiere código de Google Authenticator. En el primer acceso, el panel muestra el modal obligatorio para cambiar la clave.
-
-**Estudiantes y docentes:**
-
-1. Abre el botón del correo de bienvenida, personalizado según tu rol.
-2. En Google Authenticator, pulsa `+` y escanea el QR. También existe una clave manual.
-3. Confirma el código de seis dígitos. Entrarás directamente al panel.
-4. En el modal del panel, ingresa la contraseña temporal del correo y elige una nueva de al menos 12 caracteres, con mayúsculas, minúsculas, números y símbolos. El panel no habilita las funciones hasta guardarla; puedes salir de la sesión si necesitas volver después.
-5. En los siguientes accesos, ingresa correo, contraseña y un nuevo código de Google Authenticator.
-
-Si la invitación inicial venció y aún no activaste la cuenta:
-
-```powershell
-cd backend
-php artisan uls:activacion-local admin@uls.edu.sv
-```
-
-Para crear otro administrador y enviar su invitación real con SMTP:
-
-```powershell
-php artisan uls:admin correo@ejemplo.com --name="Nombre del administrador"
-```
-
-## Correos con Mailjet
-
-### Restablecer una contraseña o un autenticador perdido
-
-En **Docentes** o **Estudiantes**, el administrador puede pulsar **Restablecer QR** y confirmar el destinatario. Se envía al correo registrado un enlace de un solo uso, válido por 72 horas, para configurar un QR nuevo, junto con una contraseña temporal. El usuario confirma el nuevo código en Google Authenticator, entra al panel y debe cambiar esa clave temporal.
-
-El restablecimiento reemplaza la contraseña, el secreto del autenticador y cualquier invitación anterior. Cierra las sesiones del usuario e invalida los intentos OTP y enlaces de recuperación de contraseña anteriores. Las notas y matrículas se conservan. Si falla el envío, la operación se revierte y el acceso anterior permanece vigente.
-
-**Reenviar correo** conserva el autenticador de las cuentas activas; **Restablecer QR** lo reemplaza. Esta última acción solo está disponible para administradores y se aplica a docentes y estudiantes. El administrador sigue ingresando sin OTP, según la configuración solicitada.
-
-La instalación local usa `backend/.env`, excluido de Git. Las credenciales entregadas están configuradas allí; no aparecen en Vue ni en `.env.example`. SMTP: `in-v3.mailjet.com`, puerto `587`, esquema `smtp` con STARTTLS automático. El remitente configurado debe estar validado en Mailjet.
-
-En otras instalaciones, completa `MAIL_USERNAME` (API key), `MAIL_PASSWORD` (secret key), `MAIL_FROM_ADDRESS` y `FRONTEND_URL` en `.env`, luego ejecuta `php artisan config:clear`. Para pruebas sin envío real, usa `MAIL_MAILER=array`. Para inspeccionar correos localmente se puede usar `log`, pero ese modo escribe contraseñas temporales y enlaces en el registro: usar solo en práctica y no compartir esos registros.
-
-Crear un docente desde el panel envía un correo con un botón de ingreso, contraseña temporal y enlace de QR de un solo uso, válido por 72 horas. Las cuentas pendientes admiten reenviar la invitación. Las cuentas activas también admiten reenviar el correo de acceso; conservan su contraseña y autenticador. Tanto docentes como estudiantes muestran su estado de activación y permiten editar sus datos, incluido el correo. Al cambiar el correo se envía una invitación o aviso al nuevo destinatario. La carrera de todos los estudiantes es `Licenciatura en ciencias de la computacion`. Crear un estudiante también crea su cuenta y envía el correo de activación. Para fichas creadas con la versión anterior, pulsa **Reenviar correo** para crear su acceso y enviar la primera invitación; no se modifican sus notas ni inscripciones. El rol estudiante solo puede consultar sus propias notas y grupos; no tiene acceso a informes, estadísticas, PDF ni CSV.
-
-Las notas se envían individualmente al correo registrado del estudiante con el botón de sobre. Las pruebas automatizadas usan correo simulado y no envían mensajes reales.
-
-## Funciones y permisos
-
-| Función | Administrador | Docente |
-|---|---|---|
-| Gestionar docentes y estudiantes | Sí | No |
-| Crear, editar y eliminar grupos | Sí | No |
-| Ver grupos | Todos | Solo asignados |
-| Registrar, editar, eliminar y enviar notas | Todos | Solo sus grupos e inscritos |
-| Informes PDF, CSV y gráfico mensual | Todos | Solo sus grupos |
-
-Los estudiantes acceden con el mismo flujo de QR, OTP y cambio de clave; únicamente consultan su información. No pueden modificar ni enviar notas, ni acceder a informes o estadísticas. Todos los roles disponen de **Mi perfil**, con edición de nombre y teléfono, datos de la cuenta y cambio de contraseña. El correo se modifica desde la administración. El menú lateral se puede contraer a iconos y expandir; en móvil se abre con el botón de menú.
-
-Tablas con cinco registros por página, búsquedas, formularios con validación, confirmación de borrado y mensajes de resultado. PDF con visor PDF.js y descarga; CSV compatible con Excel y protección de fórmulas. Los filtros de informes se aplican al consultar; los botones de exportación usan los filtros seleccionados.
-
-Sesiones HTTP-only, protección CSRF, limitación de intentos, desafío OTP de cinco minutos, secretos TOTP cifrados, tokens de invitación con hash y contraseñas con hash. El backend bloquea las funciones académicas hasta cambiar la contraseña. En producción usar HTTPS, `APP_DEBUG=false`, cookies seguras, copias de la base de datos y conservar `APP_KEY`; desplegar frontend y API con el mismo origen.
-
-## Validación
-
-### Bienvenida y boleta de inscripción
-
-Al guardar correctamente la contraseña inicial aparece una bienvenida personalizada con confeti y el botón **Comenzar mi experiencia**. La animación respeta la preferencia de movimiento reducido. La bienvenida no se repite al recargar ni al cambiar la contraseña posteriormente desde el perfil.
-
-Los estudiantes disponen de **Mi inscripción**, con selección del ciclo, vista PDF incrustada y descarga de la **boleta de inscripción**. El documento incluye el logo institucional, datos del estudiante, carrera, ciclo, asignaturas inscritas, grupos, docentes y fecha de emisión. Solo utiliza inscripciones registradas; no inventa horarios, créditos ni estados de pago. Si todavía no existen inscripciones, se muestra un aviso en lugar de generar una boleta vacía.
-
-Las rutas `/api/enrollment` y `/api/enrollment/pdf` consultan al estudiante de la sesión. No aceptan identificadores de otros estudiantes. Esta boleta personal está permitida para el alumno; los informes y estadísticas generales siguen restringidos a docentes y administradores.
-
-```powershell
 npm.cmd run build
+node --test tests/gradeWorkbook.test.mjs
 cd backend
 php artisan test
 ```
 
-Las pruebas cubren TOTP con vector RFC, activación y caducidad, login con dos factores, rechazo de reutilización, cambio obligatorio de clave, aislamiento docente, validación y duplicados de notas, correo simulado y exportación PDF/CSV.
+La suite PHP utiliza SQLite **en memoria**, definido en `backend/phpunit.xml`, y correo simulado; no borra la base local ni envía mensajes reales. Las pruebas de Excel crean y reabren el `.xlsx` para revisar sus estilos, tipos de datos y configuración de impresión.
 
-La base de pruebas se ejecuta en SQLite en memoria para conservar los datos locales. También se comprobó el recorrido de acceso en Chrome, la carga de cinco notas por página, el formulario de captura, el renderizado del PDF y el menú en una pantalla móvil de 390 píxeles. La autenticación SMTP se verificó sin enviar un correo real.
+`npm run build` produce `dist`. Para esta prueba se debe usar Vite en desarrollo: `dist/index.html` no se abre directamente ni reemplaza al backend PHP. Un despliegue de producción necesita servir el frontend y la API bajo un mismo origen o configurar el proxy del servidor.
 
-Diagrama físico y decisiones académicas: [docs/base-de-datos.md](docs/base-de-datos.md). No se implementa el trámite de constancias de la imagen, ya que el alcance solicitado es Consulta de Notas.
+## 9. Problemas frecuentes
 
-Referencias: [VueUse QR](https://vueuse.org/integrations/useqrcode/), [AnimateIcons para Vue](https://animateicons.in/icons/docs/vue), [SMTP de Mailjet](https://dev.mailjet.com/docs/smtp-relay/configuration).
+| Problema | Revisar |
+|---|---|
+| `npm.ps1` bloqueado en PowerShell | Utilizar `npm.cmd` como en esta guía. |
+| `could not find driver` | Habilitar `pdo_sqlite` en el PHP de la terminal; revisar con `php --ini` y `php -m`. |
+| Error de versión PHP | Usar PHP 8.2+ y ejecutar `composer install` con ese mismo PHP. |
+| Puerto ocupado o frontend en 5174 | Detener la instancia anterior o utilizar los puertos 5173/8001; `--strictPort` evita cambiar de puerto silenciosamente. |
+| No aparecen notas o el gráfico está vacío | Seleccionar septiembre u octubre de 2026 y consultar; los datos iniciales tienen esas fechas. |
+| El administrador de prueba no entra | Ejecutar `php artisan uls:demo-admin --reset` en `APP_ENV=local`. |
+| No llega un correo | Con `log` el correo está en el archivo de registro; solo `smtp` realiza envíos reales. |
+| Error 503 al crear o restablecer una cuenta | Revisar SMTP/red/remitente, o usar `MAIL_MAILER=log` y ejecutar `config:clear`. Si falla el envío, la operación se revierte. |
+| OTP inválido o ya utilizado | Revisar la hora automática del teléfono, la cuenta ULS seleccionada y esperar al próximo código. |
+| Error 419 | Recargar e iniciar sesión; mantener `127.0.0.1` en ambas URLs. |
+| Se cambiaron estilos pero se ve la versión anterior | Recargar con `Ctrl + F5`. |
 
+## Estructura principal
 
-El botón **Salir del sistema** está en la barra superior y también en el cambio inicial de contraseña. Cierra la sesión del servidor y regresa al login. El backend local utiliza el puerto 8001 para evitar una instancia anterior bloqueada en el 8000. Si aparece un bloqueo de red SMTP, ejecuta el backend desde una terminal normal con acceso de red; el diagnóstico autenticado `/api/system/mail-status` permite verificar SMTP desde el proceso web sin enviar mensajes.
-# parcial3Vue3_sv24461
+```text
+src/                    Frontend Vue: vistas, componentes, servicios y estilos
+public/                 Logos y fondo vectorial del acceso
+backend/app/            Controladores, modelos, servicios, middleware y comandos
+backend/routes/         Endpoints de la API
+backend/database/       Migraciones, semillas y SQLite local
+backend/resources/views/ Plantillas de correo y documentos PDF
+backend/tests/          Pruebas PHP
+tests/                  Pruebas del Excel
+docs/                   Documentación y guía de evaluación
+```
+
+Los archivos `.env`, la base SQLite, los registros, `vendor`, `node_modules`, `dist` y `.runtime` están excluidos del control de versiones. Las dependencias y la base se reconstruyen siguiendo esta guía.

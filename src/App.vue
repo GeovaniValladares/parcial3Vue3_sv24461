@@ -34,7 +34,7 @@ async function leave(){welcomeOpen.value=false;if(leaving.value)return;leaving.v
   <router-view v-if="auth"/>
   <div v-else class="app-layout" :class="{'menu-collapsed':collapsed&&!smallScreen}">
    <aside class="sidebar" :class="{open:mobile}">
-    <div class="sidebar-brand-row"><Brand/></div>
+    <div class="sidebar-brand-row"><Brand light/></div>
     <div class="workspace-label">ESPACIO DE TRABAJO</div>
     <nav aria-label="Navegación principal"><router-link v-for="link in links" :key="link.to" :to="link.to" :title="collapsed?link.label:undefined" @click="mobile=false" :class="{active:route.path===link.to}"><Icon :name="link.icon"/><span class="nav-label">{{link.label}}</span><span v-if="route.path===link.to" class="nav-dot"></span></router-link></nav>
     <div class="sidebar-bottom"><div class="security-note"><span class="security-icon"><Icon name="ShieldCheck"/></span><strong>Tu información, segura</strong><p>{{session.user?.role==='admin'?'Acceso administrativo con contraseña personal.':'Acceso protegido con verificación en dos pasos.'}}</p><span class="secure-badge"><span></span> Protección activa</span></div><button class="logout" :disabled="leaving" title="Salir del sistema" @click="leave"><Icon name="LogOut"/><span class="nav-label">Cerrar sesión</span></button></div>

@@ -118,6 +118,7 @@ class StudentAccountsTest extends TestCase
         $this->getJson('/api/reports')->assertForbidden();
         $this->getJson('/api/reports/pdf')->assertForbidden();
         $this->getJson('/api/reports/csv')->assertForbidden();
+        $this->getJson('/api/reports/excel')->assertForbidden();
         $this->getJson('/api/dashboard')->assertOk()->assertJsonMissingPath('stats');
         $this->getJson('/api/options')->assertOk()->assertJsonCount(1, 'groups.0.students');
         $this->postJson('/api/grades', [])->assertForbidden();

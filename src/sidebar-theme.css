@@ -1,0 +1,15 @@
+:root{--uls-primary:#313945;--uls-secondary:#2D52A8}
+.sidebar{background:var(--uls-primary);border-right-color:#28313d}
+.sidebar .workspace-label{color:#b9ccef}
+.sidebar .brand.light small{color:#ccdaf5}
+.sidebar nav a{color:#d5e1f8}
+.sidebar nav a:hover{color:#fff;background:#ffffff16}
+.sidebar nav a.active{color:#fff;background:var(--uls-secondary);box-shadow:0 3px 12px #18233326}
+.sidebar nav a.active .nav-dot{background:#fff}
+.sidebar .security-note{background:#ffffff0c;border-color:#ffffff24}
+.sidebar .security-note strong{color:#f3f7ff}
+.sidebar .security-note p{color:#c2d2ef}
+.sidebar .security-icon{background:#ffffff19;color:#dce8ff}
+.sidebar .secure-badge{color:#a4efcd}
+.sidebar .logout{color:#d5e1f8;border-top-color:#ffffff28}
+.sidebar .logout:hover{color:#fff;background:#ffffff10;border-radius:8px}

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\InvitationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -16,6 +17,8 @@ use Illuminate\Validation\ValidationException;
 
 class AcademicController extends Controller
 {
+    private const REPORT_COLUMNS = ['Fecha', 'Carné', 'Estudiante', 'Asignatura', 'Grupo', 'Ciclo', 'Evaluación', 'Nota', 'Estado', 'Docente'];
+
     private function groupQuery(Request $r)
     {
         return AcademicGroup::query()->when($r->user()->role === 'teacher', fn ($q) => $q->where('teacher_id', $r->user()->id))
@@ -296,18 +299,70 @@ class AcademicController extends Controller
         return ['grades' => $grades, 'students' => $averages->values(), 'passed' => $averages->filter(fn ($row) => $row['average'] >= 6)->count(), 'failed' => $averages->filter(fn ($row) => $row['average'] < 6)->count(), 'average' => round($grades->avg('score') ?? 0, 2)];
     }
 
-    public function csv(Request $r)
+    private function tabularReport(Request $r): array
     {
         $rows = $this->gradeQuery($r)->orderBy('student_id')->get();
+        $formatDate = fn ($date) => Carbon::parse($date)->format('d/m/Y');
+        if ($r->filled('month')) {
+            $start = Carbon::parse($r->month.'-01');
+            $range = $start->format('d/m/Y').' - '.$start->copy()->endOfMonth()->format('d/m/Y');
+        } else {
+            $range = $rows->isEmpty() ? 'Sin registros' : $formatDate($rows->min('recorded_on')).' - '.$formatDate($rows->max('recorded_on'));
+        }
+        $group = $r->filled('group_id') ? $this->groupQuery($r)->find($r->group_id) : null;
+        $metadata = [
+            ['Institución', 'Universidad Luterana Salvadoreña'],
+            ['Reporte', 'Cuadro de notas ULS'],
+            ['Rango de fechas', $range],
+            ['Usuario que genera', $r->user()->name],
+            ['Fecha y hora de generación', now()->format('d/m/Y H:i')],
+            ['Estudiantes reportados', $rows->pluck('student_id')->unique()->count()],
+            ['Notas registradas', $rows->count()],
+            ['Grupo consultado', $r->filled('group_id') ? ($group ? $group->code.' - '.$group->subject : 'Sin resultados para el grupo seleccionado') : 'Todos los grupos autorizados'],
+            ['Evaluación', $r->filled('evaluation') ? 'Parcial '.$r->evaluation : 'Todas las evaluaciones'],
+            ['Ciclos académicos', $rows->pluck('group.cycle')->unique()->sort()->implode(', ') ?: 'Sin registros'],
+        ];
 
-        return response()->streamDownload(function () use ($rows) {
+        return ['rows' => $rows, 'metadata' => $metadata];
+    }
+
+    public function excel(Request $r)
+    {
+        $report = $this->tabularReport($r);
+
+        return response()->json([
+            'metadata' => $report['metadata'],
+            'columns' => self::REPORT_COLUMNS,
+            'rows' => $report['rows']->map(fn ($grade) => [
+                $grade->recorded_on, $grade->student->student_code, $grade->student->name,
+                $grade->group->subject, $grade->group->code, $grade->group->cycle,
+                'Parcial '.$grade->evaluation, $grade->score,
+                $grade->score >= 6 ? 'Aprobado' : 'Reprobado', $grade->group->teacher?->name ?? '',
+            ])->values(),
+        ])->header('Cache-Control', 'private, no-store');
+    }
+
+    public function csv(Request $r)
+    {
+        ['rows' => $rows, 'metadata' => $metadata] = $this->tabularReport($r);
+        $formatDate = fn ($date) => Carbon::parse($date)->format('d/m/Y');
+
+        return response()->streamDownload(function () use ($rows, $metadata, $formatDate) {
             $f = fopen('php://output', 'w');
             fwrite($f, "\xEF\xBB\xBF");
-            fputcsv($f, ['Carné', 'Estudiante', 'Grupo', 'Asignatura', 'Ciclo', 'Evaluación', 'Nota', 'Estado', 'Fecha']);
+            $write = function (array $cells) use ($f) {
+                $safe = fn ($value) => preg_match('/^(?:[\x00-\x20]*[=+@-]|[\t\r\n])/u', (string) $value) ? "'".$value : (string) $value;
+                fputcsv($f, array_map($safe, array_pad($cells, 10, '')), ',', '"', '', "\r\n");
+            };
+            foreach ($metadata as $line) {
+                $write($line);
+            }
+            $write([]);
+            $write(self::REPORT_COLUMNS);
             foreach ($rows as $g) {
-                $safe = fn ($s) => preg_match('/^[=+@\-\t\r]/u', (string) $s) ? "'".$s : $s;
-                fputcsv($f, array_map($safe, [$g->student->student_code, $g->student->name, $g->group->code, $g->group->subject, $g->group->cycle, $g->evaluation, $g->score, $g->score >= 6 ? 'Aprobado' : 'Reprobado', $g->recorded_on]));
-            }fclose($f);
+                $write([$formatDate($g->recorded_on), $g->student->student_code, $g->student->name, $g->group->subject, $g->group->code, $g->group->cycle, 'Parcial '.$g->evaluation, number_format($g->score, 2, '.', ''), $g->score >= 6 ? 'Aprobado' : 'Reprobado', $g->group->teacher?->name ?? '']);
+            }
+            fclose($f);
         }, 'notas-uls.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 

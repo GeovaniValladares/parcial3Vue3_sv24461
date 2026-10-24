@@ -31,7 +31,7 @@ class CreateAdmin extends Command
             $user = User::create(['name' => $this->option('name'), 'email' => $email, 'role' => 'admin', 'password' => Str::password(24)]);
             $service->send($user);
         });
-        $this->info('Administrador creado. Revisa su correo para activar Google Authenticator.');
+        $this->info('Administrador creado. Revisa su correo e ingresa con la contraseña temporal. No requiere OTP.');
 
         return self::SUCCESS;
     }

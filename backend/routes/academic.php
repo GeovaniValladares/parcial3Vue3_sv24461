@@ -34,6 +34,7 @@ Route::prefix('api')->group(function () {
         Route::get('/groups', 'groups');
         Route::get('/reports', 'report')->middleware('academic:staff');
         Route::get('/reports/csv', 'csv')->middleware('academic:staff');
+        Route::get('/reports/excel', 'excel')->middleware('academic:staff');
         Route::get('/reports/pdf', 'pdf')->middleware('academic:staff');
     });
     Route::middleware('academic:admin')->controller(AcademicController::class)->group(function () {
