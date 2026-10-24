@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:32px 14px;background:#F4F7FD;font-family:Arial,Helvetica,sans-serif;color:#313945">
+<div style="display:none;max-height:0;overflow:hidden">Tu cuenta está lista. Bienvenido a una comunidad que aprende, comparte y transforma.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid #e5ebf5;border-radius:18px;overflow:hidden">
+<tr><td style="padding:26px 36px 4px">@include('emails.brand')</td></tr>
+<tr><td style="background:#2D52A8;padding:30px 36px;color:#ffffff"><p style="margin:0 0 14px;font-size:11px;letter-spacing:2px;color:#c4d5fa">BIENVENIDO A LA COMUNIDAD ULS</p><h1 style="font-size:30px;line-height:1.25;margin:0;font-weight:700">Tu nueva etapa<br>comienza aquí.</h1><p style="margin:16px 0 0;color:#d3e0fb;font-size:14px;line-height:1.7">Aprender, compartir y transformar. Nos alegra que seas parte.</p></td></tr>
+<tr><td style="padding:30px 36px 12px"><h2 style="font-size:21px;margin:0 0 15px">¡Hola, {{ $person->name }}!</h2>
+@if($person->role === 'student')
+<p style="font-size:14px;line-height:1.9;color:#68788f;margin:0 0 14px">Te damos la bienvenida a la <strong>Universidad Luterana Salvadoreña</strong>. Cada paso de tu formación abre nuevas posibilidades, y queremos acompañarte en ese camino.</p><p style="font-size:14px;line-height:1.9;color:#68788f;margin:0">Tu portal académico ya está preparado para ti: un espacio para consultar tus notas, conocer tus grupos y seguir de cerca tu aprendizaje.</p>
+@elseif($person->role === 'teacher')
+<p style="font-size:14px;line-height:1.9;color:#68788f;margin:0 0 14px">Es un gusto recibirte en el equipo docente de la <strong>Universidad Luterana Salvadoreña</strong>. Tu conocimiento y vocación son parte del futuro que construimos junto a nuestros estudiantes.</p><p style="font-size:14px;line-height:1.9;color:#68788f;margin:0">Ya tienes un espacio para acompañar a tus grupos, registrar evaluaciones y dar seguimiento al aprendizaje con información clara y organizada.</p>
+@else
+<p style="font-size:14px;line-height:1.9;color:#68788f;margin:0">Tu cuenta administrativa está lista. Gracias por contribuir a una experiencia académica cercana, organizada y confiable para nuestra comunidad.</p>
+@endif
+</td></tr>
+<tr><td style="padding:18px 36px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F7FD;border-radius:12px"><tr><td style="padding:20px 22px"><p style="margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:1px;color:#637cae">TUS DATOS DE ACCESO</p><p style="margin:0 0 12px;font-size:13px;line-height:1.8"><strong>Correo electrónico</strong><br>{{ $person->email }}</p><p style="margin:0;font-size:13px;line-height:1.8"><strong>Contraseña temporal</strong><br><span style="font-family:monospace;font-size:16px;color:#2D52A8">{{ $temporaryPassword }}</span></p></td></tr></table></td></tr>
+<tr><td style="padding:6px 36px 12px"><h3 style="font-size:15px;margin:0 0 14px;color:#3c568c">Tres pasos para comenzar</h3><p style="font-size:13px;line-height:2;color:#68788f;margin:0"><strong style="color:#2D52A8">01.</strong> Abre tu portal con el botón de abajo.<br><strong style="color:#2D52A8">02.</strong> @if($person->role === 'admin')Ingresa tu correo y la contraseña temporal de este mensaje.@else Escanea el QR en Google Authenticator y confirma el código de tu app.@endif<br><strong style="color:#2D52A8">03.</strong> Dentro de tu panel, cambia la contraseña temporal por una personal.</p></td></tr>
+<tr><td align="center" style="padding:18px 36px 26px"><a href="{{ $url }}" style="display:inline-block;background:#2D52A8;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:16px 28px;border-radius:9px">Ingresar a mi portal académico &rarr;</a></td></tr>
+<tr><td style="padding:0 36px 28px"><p style="font-size:11px;line-height:1.8;color:#96a2b5;margin:0">Tu invitación es personal y estará disponible durante 72 horas. Guarda tus datos en un lugar seguro y no compartas tus códigos. Si necesitas ayuda, nuestro administrador estará para acompañarte.</p></td></tr>
+<tr><td style="border-top:1px solid #edf0f6;padding:22px 36px;background:#fbfcff"><p style="font-size:12px;line-height:1.8;color:#60789f;margin:0"><strong>Bienvenido a una comunidad que transforma.</strong><br>Universidad Luterana Salvadoreña · Consulta de Notas ULS</p></td></tr>
+</table><p style="font-size:10px;color:#a0acbf;margin:18px 0">Este mensaje fue enviado porque la institución creó tu cuenta académica.</p>
+</td></tr></table></body></html>

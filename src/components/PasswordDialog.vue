@@ -1,0 +1,19 @@
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { api, session } from '../api'
+import Icon from './Icon.vue'
+const props=defineProps({modelValue:Boolean,required:Boolean})
+const emit=defineEmits(['update:modelValue','leave','completed'])
+const current=ref(''),password=ref(''),confirmation=ref(''),busy=ref(false),error=ref('')
+const visible=ref({current:false,password:false,confirmation:false})
+const fields=computed(()=>[
+ {key:'current',label:props.required?'Contraseña temporal':'Contraseña actual',autocomplete:'current-password'},
+ {key:'password',label:'Nueva contraseña',autocomplete:'new-password'},
+ {key:'confirmation',label:'Confirmar nueva contraseña',autocomplete:'new-password'}
+])
+function getValue(key){return key==='current'?current.value:key==='password'?password.value:confirmation.value}
+function setValue(key,value){if(key==='current')current.value=value;else if(key==='password')password.value=value;else confirmation.value=value}
+watch(()=>props.modelValue,()=>{current.value='';password.value='';confirmation.value='';error.value='';visible.value={current:false,password:false,confirmation:false}})
+async function save(){const firstAccess=!!session.user?.must_change_password;busy.value=true;error.value='';try{const result=await api('/auth/password',{method:'PUT',body:{current_password:current.value,password:password.value,password_confirmation:confirmation.value}});session.user=result.user;emit('update:modelValue',false);emit('completed',{firstAccess})}catch(e){error.value=Object.values(e.errors||{}).flat().join(' ')||e.message}finally{busy.value=false}}
+</script>
+<template><v-dialog :model-value="modelValue" :persistent="required||busy" max-width="790" @update:model-value="emit('update:modelValue',$event)"><v-card class="password-dialog"><div class="password-dialog-title"><div><Icon name="LockKeyhole" :size="19"/><h2>Cambio de contraseña</h2></div><button v-if="!required" @click="emit('update:modelValue',false)" aria-label="Cerrar"><Icon name="X" :size="21"/></button></div><div class="password-dialog-body"><aside class="password-visual"><div class="password-shield"><Icon name="ShieldCheck" :size="76"/></div><span class="eyebrow">TU CUENTA, TU TRANQUILIDAD</span><h3>Un nuevo comienzo.<br>Un acceso más seguro.</h3><p>Elige una contraseña que solo tú conozcas.</p></aside><form id="password-change-form" @submit.prevent="save"><p class="password-intro">{{required?'¡Bienvenido a tu panel! Por seguridad, cambia tu contraseña temporal antes de continuar.':'Actualiza tu contraseña para mantener protegida tu cuenta.'}}</p><v-alert v-if="error" type="error" variant="tonal" class="mb-4">{{error}}</v-alert><v-text-field v-for="field in fields" :key="field.key" :id="'change-'+field.key" :model-value="getValue(field.key)" @update:model-value="setValue(field.key,$event)" :label="field.label" :type="visible[field.key]?'text':'password'" :autocomplete="field.autocomplete" :minlength="field.key==='current'?1:12" required :disabled="busy"><template #prepend-inner><Icon name="LockKeyhole" :size="17"/></template><template #append-inner><button type="button" @click="visible[field.key]=!visible[field.key]" :aria-label="visible[field.key]?'Ocultar contraseña':'Mostrar contraseña'"><Icon :name="visible[field.key]?'EyeOff':'Eye'" :size="18"/></button></template></v-text-field><p class="password-hint">Mínimo 12 caracteres, con mayúsculas, minúsculas, números y símbolos.</p></form></div><div class="modal-footer"><v-btn variant="text" :disabled="busy" @click="required?emit('leave'):emit('update:modelValue',false)">{{required?'Salir del sistema':'Cancelar'}}</v-btn><v-btn color="primary" type="submit" form="password-change-form" :loading="busy"><Icon name="Check" :size="17" class="mr-2"/>Guardar contraseña</v-btn></div></v-card></v-dialog></template>

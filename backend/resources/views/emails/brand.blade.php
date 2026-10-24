@@ -1,0 +1,1 @@
+<div style="background:#ffffff;padding:12px 0 20px"><img src="{{ $message->embed(public_path('images/logo-uls.png')) }}" alt="ULS · Universidad Luterana Salvadoreña" width="220" style="display:block;width:220px;max-width:100%;height:auto;border:0"/></div>
