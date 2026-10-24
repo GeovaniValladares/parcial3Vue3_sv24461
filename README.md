@@ -9,6 +9,7 @@ Sistema académico de práctica para la Universidad Luterana Salvadoreña, desar
 | [Documentación del sistema](docs/documentacion-sistema.md) | Arquitectura, tecnologías, ubicación del código, módulos, permisos, reglas y flujos. |
 | [Guía de prueba para el docente](docs/guia-pruebas-docente.md) | Recorrido de evaluación con resultados esperados, prueba de QR y correos sin SMTP. |
 | [Base de datos](docs/base-de-datos.md) | Diagrama físico, relaciones y restricciones. |
+| [Acceso remoto temporal](docs/acceso-remoto.md) | Prueba mediante enlace HTTPS, credenciales privadas y cómo detener el túnel. |
 
 ## 1. Requisitos
 

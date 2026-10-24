@@ -1,0 +1,110 @@
+/* Compact institutional presentation shared by all application views. */
+.v-application{font-size:13px;background:#edf0f5!important}
+.app-layout{background:#edf0f5}
+.sidebar{background:#151e59;border-right:1px solid #101744;padding-top:20px}
+.sidebar nav a{border-radius:3px;min-height:44px;padding-top:10px;padding-bottom:10px;font-size:13px}
+.sidebar nav a.active{background:#ffffff1c;box-shadow:none}
+.sidebar .security-note{border-radius:3px;padding:14px}
+.sidebar .logout:hover{border-radius:3px}
+.workspace-label{margin-top:24px;margin-bottom:12px;font-size:10px}
+.topbar{min-height:60px;height:auto;background:#fff;border:1px solid #d5dae3;box-shadow:0 2px 6px #26334915;padding:10px 20px}
+.page-content{padding:22px;max-width:1600px;margin:0 auto;width:100%}
+.page-heading{margin-bottom:18px;gap:14px}
+.page-heading h1{font-size:24px;letter-spacing:-.4px;line-height:1.3}
+.page-heading p{font-size:12px;margin-top:6px}
+.heading-dot{display:none}
+.eyebrow{font-size:9px;letter-spacing:1px}
+.panel,.stat-card,.mini-group,.profile-summary,.profile-security,.profile-password,.enrollment-summary,.enrollment-preview,.report-callout,.report-stat,.report-explainer{border-radius:4px!important;border:1px solid #d6dce7;box-shadow:0 2px 5px #23304b0b}
+.panel-heading{padding:15px 18px;border-bottom:1px solid #d6dce7}
+.panel-heading h2{font-size:16px}
+.records-title{background:#fafbfc;border:1px solid #d6dce7;border-radius:3px;padding:10px 14px;color:#313945}
+.records-toolbar,.records-filters,.report-filters{padding:14px 18px;gap:12px}
+.records-panel{overflow:hidden}
+.data-table{font-size:12px}
+.data-table thead th{background:#f3f4f6;color:#313945;font-size:10px;letter-spacing:.2px;padding:12px 14px;border-bottom:1px solid #d6dce7}
+.data-table tbody td{padding:10px 14px;border-bottom:1px solid #e4e8f0}
+.data-table tbody tr:nth-child(odd){background:#fafbfc}
+.data-table tbody tr:hover{background:#f1f3f5}
+.student-cell{gap:9px}
+.student-cell strong{font-size:12px}
+.student-cell small{font-size:10px}
+.student-avatar,.avatar,.profile-avatar,.group-icon,.stat-icon,.security-icon,.list-icon,.confirm-icon{border-radius:4px}
+.student-avatar{width:32px;height:32px;font-size:11px}
+.status-badge,.evaluation-chip,.cycle-badge,.count-badge{border-radius:3px;font-size:10px}
+.row-actions{gap:5px;flex-wrap:wrap}
+.row-actions button{border-radius:3px;padding:5px;font-size:10px}
+.pagination-bar{background:#f4f6fb;border-top:1px solid #d6dce7;padding:10px 16px}
+.pagination-bar p,.pagination-controls>span{font-size:11px}
+.pagination-controls button,.v-pagination .v-btn{border-radius:3px!important}
+.v-application .v-btn{border-radius:3px!important;font-size:12px;letter-spacing:0;min-height:34px}
+.v-application .v-card,.v-application .v-alert,.v-application .v-field{border-radius:4px!important}
+.v-application .v-field__input{font-size:13px;min-height:44px;padding-top:10px;padding-bottom:10px}
+.v-application .v-label{font-size:12px}
+.v-application .v-field{--v-input-control-height:44px}
+.modal-heading{padding:18px 22px;border-bottom:1px solid #d6dce7}
+.modal-heading h2{font-size:20px}
+.modal-footer{padding:12px 22px;background:#f5f7fb;border-top:1px solid #d6dce7}
+.welcome-banner{border-radius:4px;background:#2D52A8;min-height:170px}
+.welcome-copy h2{font-size:28px;line-height:1.25}
+.banner-art,.banner-orbit,.banner-spark{display:none}
+.stat-card{padding:18px}
+.stat-value{font-size:28px}
+.stat-grid{gap:14px}
+.app-footer{font-size:10px}
+.main-shell .welcome-banner,.main-shell .report-callout{background:#fafbfc;color:#313945;border:1px solid #d6dce7;box-shadow:none}
+.main-shell .welcome-copy h2,.main-shell .welcome-copy p,.main-shell .banner-kicker,.main-shell .report-callout h2,.main-shell .report-callout p{color:#313945}
+.main-shell .report-callout a{color:#2D52A8}
+.main-shell .stat-icon,.main-shell .group-icon,.main-shell .report-callout-icon,.main-shell .student-avatar,.main-shell .profile-avatar,.main-shell .info-strip,.main-shell .report-stat,.main-shell .report-explainer{background:#f5f6f8;color:#536074}
+.main-shell .mini-group,.main-shell .panel,.main-shell .stat-card{background:#fff}
+.summary-heading{padding:14px 18px;background:#fff;border:1px solid #d6dce7;border-radius:3px;margin-bottom:16px;align-items:center}
+.summary-heading h1{font-size:21px}
+.summary-heading p{margin-top:3px;font-size:12px}
+.summary-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.summary-date{font-size:11px;color:#65738a}
+.summary-stats{margin-bottom:18px;gap:12px}
+.summary-stats .stat-card{padding:12px 16px;position:relative;min-height:94px;box-shadow:none}
+.summary-stats .stat-top{font-size:12px;padding-right:34px;margin-bottom:6px}
+.summary-stats .stat-icon{position:absolute;right:14px;top:16px;width:30px;height:30px;background:#edf2fc;color:#2D52A8}
+.summary-stats .stat-value{font-size:25px;margin:0;line-height:1.3}
+.auth-layout{background:#edf0f5;background-image:none;padding:20px 16px}
+.auth-layout .auth-main{border-radius:5px;padding:24px 30px;border:1px solid #ccd4e3;box-shadow:0 3px 12px #23304b18}
+.auth-layout .auth-top-note{margin-bottom:10px}
+.auth-layout .auth-form-wrap h2{font-size:23px;color:#2D52A8;letter-spacing:-.3px}
+.auth-layout .auth-description{color:#65738a;font-size:12px;margin:10px 0 18px}
+.auth-layout .auth-mobile-brand{margin-bottom:18px}
+.auth-layout .auth-main .auth-submit{background:#2D52A8!important;border-radius:3px!important}
+.auth-layout .qr-block{border-radius:3px;box-shadow:none}
+.auth-layout .v-otp-input .v-field{border-radius:3px!important}
+.auth-layout .access-mark{width:112px;height:112px;display:block;margin:auto;transform:rotate(-35deg);stroke-width:8;stroke-linecap:round;stroke-linejoin:round}
+.auth-layout .auth-mobile-brand{margin:4px auto 22px}
+.auth-layout .auth-form-wrap h2{color:#3923aa;font-size:23px;font-weight:800;line-height:1.25}
+.auth-layout .auth-main{width:min(100%,400px)}
+.auth-layout .auth-top-note,.auth-layout .auth-form-wrap>.eyebrow{display:none}
+.auth-layout .auth-description{color:#7566bb;font-size:10px}
+.auth-layout .v-field__prepend-inner,.auth-layout .v-field__append-inner{color:#9284d1}
+.auth-layout .auth-main .auth-submit{background:#9689cf!important;height:36px!important;min-height:36px;letter-spacing:1px!important}
+.auth-layout .auth-footer{color:#7566bb;font-size:9px;margin-top:20px}
+.auth-step-login .field-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.auth-step-login .label-row,.auth-step-login .auth-help,.auth-step-login .auth-submit svg{display:none}
+.auth-step-login .v-field__input{min-height:36px;font-size:12px;padding-top:7px;padding-bottom:7px}
+.auth-step-login .v-field{--v-input-control-height:36px}
+.auth-step-login .v-input__details{min-height:18px}
+.login-recovery{text-align:center;margin-top:13px;font-size:10px}
+.login-recovery a{color:#7566bb;text-decoration:underline}
+@media(max-width:760px){
+ .page-content{padding:14px 10px}
+ .topbar{padding:9px 12px}
+ .page-heading h1{font-size:21px}
+ .records-toolbar,.records-filters,.report-filters{padding:12px}
+ .data-table{min-width:640px}
+ .table-scroll{overflow-x:auto}
+ .auth-layout .auth-main{padding:20px;width:min(100%,440px)}
+}
+@media(max-height:700px){
+ .auth-layout{padding:10px}
+ .auth-layout .auth-main{padding-top:14px;padding-bottom:14px}
+ .auth-layout .auth-mobile-brand{margin-bottom:10px}
+ .auth-layout .auth-mobile-brand .institutional-brand{width:140px;max-width:140px}
+ .auth-layout .auth-form-wrap h2{font-size:21px}
+ .auth-layout .auth-help{margin-top:10px;padding-top:9px}
+}
